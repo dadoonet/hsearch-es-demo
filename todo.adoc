@@ -1,18 +1,26 @@
 = TODO for the demo
 Emmanuel Bernard, David Pilato
 
-== Have David show a Java app
+== Scripting of the demo
+
+=== Intro (2 mins)
+
+Who are we
+What is Elasticsearch ?
+
+=== Have David show a Java app (max 8 mins)
 
 * JPA app
 * index when data is saved
 * emmanuel points the limitations
+** change the analyzer to a custom one (change the schema)
 ** forget to call in one of the update methods
 ** do you send changes in bulk
 ** what if the transaction fails
 ** what about cascaded changes?
 ** what about entities referenced by another entity which itself is indexed (indexed embedded)
 
-== Explain the pluses of Hibernate Search
+=== Explain the pluses of Hibernate Search (2 mins)
 
 * object level
 * nice "type-safe" DSL
@@ -21,7 +29,7 @@ Emmanuel Bernard, David Pilato
 ** minimum configuration
 * does the lucene / Elasticsearch calls optimized for you
 
-== Things to show on the Hibernate Search side
+=== Things to show on the Hibernate Search side (11 mins)
 
 * start by the configuration
 ** `pom.xml`
@@ -54,7 +62,9 @@ Explain that we have more:
 ** field boost
 ** pagination
 
-== Show some Kibana and console goodies from Elastic?
+=== Show some Kibana and console goodies from Elastic? (2 mins)
+
+=== Q&A
 
 == Questions to ask Gunnar
 
