@@ -1,0 +1,137 @@
+= TODO for the demo
+Emmanuel Bernard, David Pilato
+
+== Have David show a Java app
+
+* JPA app
+* index when data is saved
+* emmanuel points the limitations
+** forget to call in one of the update methods
+** do you send changes in bulk
+** what if the transaction fails
+** what about cascaded changes?
+** what about entities referenced by another entity which itself is indexed (indexed embedded)
+
+== Explain the pluses of Hibernate Search
+
+* object level
+* nice "type-safe" DSL
+* tightly integrated for a Hibernate ORM app
+** no change
+** minimum configuration
+* does the lucene / Elasticsearch calls optimized for you
+
+== Things to show on the Hibernate Search side
+
+* start by the configuration
+** `pom.xml`
+** `persistence.xml`
+*** backend
+*** url
+* do some simple entity mapping
+** persist some entities to the database
+** show that they are indexed in Elasticsearch (David)
+* write some queries
+** Query DSL
+*** matching multiple fields
+*** range query including / excluding
+*** wildcard
+** Native Elasticsearch
+*** `ElasticsearchQueries.fromJson` and `ElasticSearchQueries.fromQueryString`
+** Projections
+*** SCORE, SOURCE
+** Spatial queries
+* Analizer
+** defined in Elasticsearch
+* works on OGM
+
+Explain that we have more:
+
+* error handler
+* mass indexer
+* query
+** result size
+** field boost
+** pagination
+
+== Show some Kibana and console goodies from Elastic?
+
+== Questions to ask Gunnar
+
+* name of the indices
+** lowercased `@Indexed`
+* are analyzer used?
++
+[quote]
+--
+as of alpha3, you can use analyzers which are configured in ES
+so you can set up a named analyzer in ES up front
+and then refer to it via @Analyzer on your entities
+unfortunately, atm. we cannot validate at init time that all referenced analyzers actually exist, so it will only fail when trying to actually use it at indexing time
+that's due to a bug / limitation in ES which should be fixed in the next revision
+out of interest, in which demo do you see analyzer usage?
+--
+** how can I define them from Java?
+** are they used at query time too
+*** TODO: read the analyzer test suite
+* what DSL query is supported vs not?
+** Not `MoreLikeThis`, not analyzers passed to the query, not fieldbridges passed to the query
+* are things stored / projected by default?
+** projected off the JSON document
+* spatial queries and DSL?
+** works
+* error handler works
+* custom FieldBridge?
+** works but needs `MetadataProvidingFieldBridge`
+* how are type transformed
+** reguar fieldbridge with document
+* spatial query with DSL?
+* combining lucene and Elasticsearh
+** don't sue Date field, overridden globally
+* how can I log what's going one
+* pagination
+** wall at 10000 from ES
+** we don't support scrolling API yet
+
+[sidebar]
+.Cheatsheet for Elasticsearch REST API
+--
+Here are some link:some/url[some/url]
+
+Get some mapping info::
+`http GET 'http://192.168.99.100:9200/videogame/_mapping?pretty=true?'`
+
+Search::
+`http GET 'http://localhost:9200/hockeyplayer/_search' source=='{ "query" : { "term" : { "name" : "Brand" } } }'`
+--
+
+== Retour David
+
+DEfinition of analyzer (or anything index.) in elasticsearch.yml is deprecated and will be dead.
+Use the REST API instead during index definition link:
+
+For custom analyzer or Hibernate Search analyzers, deply them as Elasticsearch plugin.
+Ask the user to package as plugin that enlist token and filter factories
+
+CAUTION: extends Elasticsearch classes
+
+In Elasticsearch queries, you cand efine the fields you want back. link:
+
+CAUTION: You can store in Lucene index AND in the Elasticsearch document, so Store.YES has a different meaning!!!
+
+No dot inside a JSON field. => warn in the doc
+
+Mention that indexed entities are not visible right away:
+
+* bulks can take up to 5s
+* and index sync up can take up to 1s
+
+=> document and offer options
+=> use bluk processor class (every 10k or 5s is configured) link:
+
+Dont' do refresh per bulk esp if we do not do per index feedback loop
+
+Consider using multi-fields / subfields of elasticsearch for the multi-indexed properties:
+
+* avoid copying the same property twice in the document
+* there is also the copy-to feature to copy data into another structure
