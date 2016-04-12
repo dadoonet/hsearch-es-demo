@@ -6,16 +6,12 @@
  */
 package org.hibernate.demos.hswithes.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-
-import org.hibernate.search.annotations.ContainedIn;
-import org.hibernate.search.annotations.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Character {
@@ -24,14 +20,11 @@ public class Character {
 	@GeneratedValue
 	public long id;
 
-	@Field
 	public String nickName;
 
-	@Field
 	public String specialPower;
 
 	@ManyToMany(mappedBy="characters")
-	@ContainedIn
 	public List<VideoGame> appearsIn = new ArrayList<>();
 
 	Character() {

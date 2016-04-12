@@ -6,51 +6,37 @@
  */
 package org.hibernate.demos.hswithes.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Indexed(index = "videogame")
 public class VideoGame {
 
 	@Id
 	@GeneratedValue
 	public long id;
 
-	@Field()
 	public String title;
 
-	@Field
 	public String description;
 
-	@Field
 	public int rating;
 
-	@Field(name="release")
 	public Date publishingDate;
 
-	@IndexedEmbedded
 	public Publisher publisher;
 
 	@ElementCollection
-	@Field
-	@IndexedEmbedded
 	public List<String> tags = new ArrayList<>();
 
 	@ManyToMany
-	@IndexedEmbedded
 	public List<Character> characters = new ArrayList<>();
 
 	VideoGame() {
