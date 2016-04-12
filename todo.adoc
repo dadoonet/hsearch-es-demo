@@ -19,6 +19,7 @@ What is Elasticsearch ?
 ** what if the transaction fails
 ** what about cascaded changes?
 ** what about entities referenced by another entity which itself is indexed (indexed embedded)
+** when reading an entity via Jackson, changes are ignored, alternative is to read id => discussion
 
 === Explain the pluses of Hibernate Search (2 mins)
 
