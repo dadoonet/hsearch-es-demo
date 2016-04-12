@@ -135,3 +135,6 @@ Consider using multi-fields / subfields of elasticsearch for the multi-indexed p
 
 * avoid copying the same property twice in the document
 * there is also the copy-to feature to copy data into another structure
+
+Wait for green is a bit too aggressive, at least we could offer option to wait for yellow
+CAUTION: the hard setting of number of replicat
