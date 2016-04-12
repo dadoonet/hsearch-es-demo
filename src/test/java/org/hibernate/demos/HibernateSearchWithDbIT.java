@@ -6,6 +6,13 @@
  */
 package org.hibernate.demos;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.hibernate.demos.hswithes.model.Character;
 import org.hibernate.demos.hswithes.model.Publisher;
 import org.hibernate.demos.hswithes.model.VideoGame;
@@ -15,6 +22,9 @@ import org.junit.Test;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -23,11 +33,20 @@ import static org.fest.assertions.Assertions.assertThat;
 public class HibernateSearchWithDbIT extends TestBase {
 
 	private static EntityManagerFactory emf;
+	private static TransportClient client;
+	private static ObjectMapper mapper;
 
 	@BeforeClass
 	public static void setUpEmf() {
 		emf = Persistence.createEntityManagerFactory( "videoGamePu" );
+		setUpEsClient();
 		setUpTestData();
+	}
+
+	private static void setUpEsClient() {
+		mapper = new ObjectMapper();
+		client = TransportClient.builder().build()
+				.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("127.0.0.1", 9300)));
 	}
 
 	public static void setUpTestData() {
@@ -58,6 +77,15 @@ public class HibernateSearchWithDbIT extends TestBase {
 
 			em.persist( game );
 
+			try {
+				client.prepareIndex("videogame", "org.hibernate.demos.hswithes.model.VideoGame", "" + game.id)
+						.setSource(mapper.writeValueAsString(game))
+						.get();
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+
+
 			// Game 2
 			game = new VideoGame.Builder()
 					.withTitle( "Tanaka's return" )
@@ -71,6 +99,15 @@ public class HibernateSearchWithDbIT extends TestBase {
 
 			em.persist( game );
 
+			try {
+				client.prepareIndex("videogame", "org.hibernate.demos.hswithes.model.VideoGame", "" + game.id)
+						.setSource(mapper.writeValueAsString(game))
+						.get();
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+
+
 			// Game 3
 			game = new VideoGame.Builder()
 					.withTitle( "Ninja Castle" )
@@ -83,64 +120,73 @@ public class HibernateSearchWithDbIT extends TestBase {
 
 			em.persist( game );
 
+			try {
+				client.prepareIndex("videogame", "org.hibernate.demos.hswithes.model.VideoGame", "" + game.id)
+						.setSource(mapper.writeValueAsString(game))
+						.get();
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+
 		} );
 
+		client.admin().indices().prepareRefresh("videogame").get();
 		em.close();
 	}
 
 	@Test
-	public void queryOnSingleField() {
-		EntityManager em = emf.createEntityManager();
+	public void queryOnSingleField() throws IOException {
+		SearchResponse response = client.prepareSearch("videogame").setQuery(
+				QueryBuilders.matchQuery("title", "Revenge of the Samurai")
+		).get();
 
-		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title=:title", VideoGame.class)
-					.setParameter("title", "Revenge of the Samurai")
-					.getResultList();
-			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
-		} );
+		List<VideoGame> videoGames = new ArrayList<>();
+		for (SearchHit hit : response.getHits().getHits()) {
+			videoGames.add(mapper.readValue(hit.getSourceAsString(), VideoGame.class));
+		}
 
-		em.close();
+		assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 	}
 
 	@Test
-	public void queryOnSingleFieldSingleTerm() {
-		EntityManager em = emf.createEntityManager();
+	public void queryOnSingleFieldSingleTerm() throws IOException {
+		SearchResponse response = client.prepareSearch("videogame").setQuery(
+				QueryBuilders.matchQuery("title", "samurai")
+		).get();
 
-		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Samurai%")
-					.getResultList();
-			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
-		} );
+		List<VideoGame> videoGames = new ArrayList<>();
+		for (SearchHit hit : response.getHits().getHits()) {
+			videoGames.add(mapper.readValue(hit.getSourceAsString(), VideoGame.class));
+		}
 
-		em.close();
+		assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 	}
 
 	@Test
-	public void queryOnSingleFieldMultipleTerms() {
-		EntityManager em = emf.createEntityManager();
+	public void queryOnSingleFieldMultipleTerms() throws IOException {
+		SearchResponse response = client.prepareSearch("videogame").setQuery(
+				QueryBuilders.matchQuery("title", "revenge samurai")
+		).get();
 
-		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Revenge%Samurai%")
-					.getResultList();
-			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
-		} );
+		List<VideoGame> videoGames = new ArrayList<>();
+		for (SearchHit hit : response.getHits().getHits()) {
+			videoGames.add(mapper.readValue(hit.getSourceAsString(), VideoGame.class));
+		}
 
-		em.close();
+		assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 	}
 
 	@Test
-	public void queryOnSingleFieldMultipleTermsInverted() {
-		EntityManager em = emf.createEntityManager();
+	public void queryOnSingleFieldMultipleTermsInverted() throws IOException {
+		SearchResponse response = client.prepareSearch("videogame").setQuery(
+				QueryBuilders.matchQuery("title", "samurai revenge")
+		).get();
 
-		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Samurai%Revenge%")
-					.getResultList();
-			assertThat( videoGames ).isEmpty();;
-		} );
+		List<VideoGame> videoGames = new ArrayList<>();
+		for (SearchHit hit : response.getHits().getHits()) {
+			videoGames.add(mapper.readValue(hit.getSourceAsString(), VideoGame.class));
+		}
 
-		em.close();
+		assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 	}
 }

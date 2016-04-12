@@ -6,6 +6,8 @@
  */
 package org.hibernate.demos.hswithes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -21,6 +23,7 @@ public class VideoGame {
 
 	@Id
 	@GeneratedValue
+	@JsonIgnore
 	public long id;
 
 	public String title;
@@ -29,6 +32,7 @@ public class VideoGame {
 
 	public int rating;
 
+	@JsonIgnore
 	public Date publishingDate;
 
 	public Publisher publisher;

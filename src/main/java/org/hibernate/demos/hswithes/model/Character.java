@@ -6,6 +6,8 @@
  */
 package org.hibernate.demos.hswithes.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -18,6 +20,7 @@ public class Character {
 
 	@Id
 	@GeneratedValue
+	@JsonIgnore
 	public long id;
 
 	public String nickName;
@@ -25,6 +28,7 @@ public class Character {
 	public String specialPower;
 
 	@ManyToMany(mappedBy="characters")
+	@JsonIgnore
 	public List<VideoGame> appearsIn = new ArrayList<>();
 
 	Character() {
