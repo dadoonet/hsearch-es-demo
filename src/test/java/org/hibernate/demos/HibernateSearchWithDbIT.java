@@ -9,17 +9,12 @@ package org.hibernate.demos;
 import org.hibernate.demos.hswithes.model.Character;
 import org.hibernate.demos.hswithes.model.Publisher;
 import org.hibernate.demos.hswithes.model.VideoGame;
-import org.hibernate.transform.BasicTransformerAdapter;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
