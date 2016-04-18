@@ -126,7 +126,7 @@ Ask the user to package as plugin that enlist token and filter factories
 
 CAUTION: extends Elasticsearch classes
 
-In Elasticsearch queries, you cand efine the fields you want back. link:
+In Elasticsearch queries, you can define the fields you want back. link:
 
 CAUTION: You can store in Lucene index AND in the Elasticsearch document, so Store.YES has a different meaning!!!
 
