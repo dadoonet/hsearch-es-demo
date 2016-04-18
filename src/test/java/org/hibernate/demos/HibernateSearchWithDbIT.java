@@ -9,6 +9,13 @@ package org.hibernate.demos;
 import org.hibernate.demos.hswithes.model.Character;
 import org.hibernate.demos.hswithes.model.Publisher;
 import org.hibernate.demos.hswithes.model.VideoGame;
+import org.hibernate.search.elasticsearch.ElasticsearchQueries;
+import org.hibernate.search.elasticsearch.ElasticsearchProjectionConstants;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -91,24 +98,61 @@ public class HibernateSearchWithDbIT extends TestBase {
 	@Test
 	public void queryOnSingleField() {
 		EntityManager em = emf.createEntityManager();
+		FullTextEntityManager ftem = Search.getFullTextEntityManager(em);
 
 		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title=:title", VideoGame.class)
-					.setParameter("title", "Revenge of the Samurai")
-					.getResultList();
+			QueryBuilder qb = ftem.getSearchFactory().buildQueryBuilder().forEntity( VideoGame.class ).get();
+			@SuppressWarnings( "unchecked" )
+			List<VideoGame> videoGames = ftem.createFullTextQuery(
+					qb.keyword().onField( "title" ).matching( "Revenge of the Samurai" ).createQuery(),
+					VideoGame.class
+				)
+				.getResultList();
 			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 		} );
 
 		em.close();
 	}
 
+	@Test
+	public void queryOnSingleFieldNativeElasticsearch() {
+		EntityManager em = emf.createEntityManager();
+		FullTextEntityManager ftem = Search.getFullTextEntityManager(em);
+
+		inTransaction( em, tx -> {
+			@SuppressWarnings( "unchecked" )
+			List<VideoGame> videoGames = ftem.createFullTextQuery(
+					ElasticsearchQueries.fromQueryString( "title:samurai" ),
+					VideoGame.class
+			)
+					.getResultList();
+			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
+		} );
+
+		inTransaction( em, tx -> {
+			@SuppressWarnings( "unchecked" )
+			List<VideoGame> videoGames = ftem.createFullTextQuery(
+					ElasticsearchQueries.fromJson( "{ 'query': { 'match' : { 'title' : 'Revenge of the Samurai' } } }" ),
+					VideoGame.class
+			)
+					.getResultList();
+			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
+		} );
+
+		em.close();
+	}
 	@Test
 	public void queryOnSingleFieldSingleTerm() {
 		EntityManager em = emf.createEntityManager();
+		FullTextEntityManager ftem = Search.getFullTextEntityManager(em);
 
 		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Samurai%")
+			QueryBuilder qb = ftem.getSearchFactory().buildQueryBuilder().forEntity( VideoGame.class ).get();
+			@SuppressWarnings( "unchecked" )
+			List<VideoGame> videoGames = ftem.createFullTextQuery(
+					qb.keyword().onField( "title" ).matching( "samurai" ).createQuery(),
+					VideoGame.class
+			)
 					.getResultList();
 			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
 		} );
@@ -117,28 +161,42 @@ public class HibernateSearchWithDbIT extends TestBase {
 	}
 
 	@Test
-	public void queryOnSingleFieldMultipleTerms() {
+	public void queryByRange() {
 		EntityManager em = emf.createEntityManager();
+		FullTextEntityManager ftem = Search.getFullTextEntityManager(em);
 
 		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Revenge%Samurai%")
+			QueryBuilder qb = ftem.getSearchFactory().buildQueryBuilder().forEntity( VideoGame.class ).get();
+			@SuppressWarnings( "unchecked" )
+			List<VideoGame> videoGames = ftem.createFullTextQuery(
+					qb.range().onField( "rating" ).from( 8 ).excludeLimit().to( 10 ).createQuery()
+					, VideoGame.class
+			)
 					.getResultList();
-			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Revenge of the Samurai" );
+			assertThat( videoGames ).onProperty( "title" ).containsExactly( "Tanaka's return" );
 		} );
 
 		em.close();
 	}
 
 	@Test
-	public void queryOnSingleFieldMultipleTermsInverted() {
+	public void queryWithProjection() {
 		EntityManager em = emf.createEntityManager();
+		FullTextEntityManager ftem = Search.getFullTextEntityManager(em);
 
 		inTransaction( em, tx -> {
-			List<VideoGame> videoGames = em.createQuery("from VideoGame v where v.title like :title", VideoGame.class)
-					.setParameter("title", "%Samurai%Revenge%")
+			QueryBuilder qb = ftem.getSearchFactory().buildQueryBuilder().forEntity( VideoGame.class ).get();
+			FullTextQuery query = ftem.createFullTextQuery(
+					qb.range().onField( "rating" ).from( 4 ).excludeLimit().to( 10 ).createQuery()
+					, VideoGame.class
+			);
+			@SuppressWarnings( "unchecked" )
+			List<Object[]> videoGames = query
+					.setProjection( "title", ElasticsearchProjectionConstants.SOURCE )
+					.setFirstResult( 0 )
+					.setMaxResults( 20 )
 					.getResultList();
-			assertThat( videoGames ).isEmpty();;
+			assertThat( videoGames ).hasSize( 3 );
 		} );
 
 		em.close();
