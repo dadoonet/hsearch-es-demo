@@ -8,9 +8,12 @@ package org.hibernate.demos.hswithes.model;
 
 import javax.persistence.Embeddable;
 
+import org.hibernate.search.annotations.Field;
+
 @Embeddable
 public class Publisher {
 
+	@Field
 	public String name;
 
 	public String address;

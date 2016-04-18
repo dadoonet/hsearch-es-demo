@@ -13,6 +13,8 @@ import javax.persistence.ManyToMany;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.search.annotations.ContainedIn;
+
 @Entity
 public class Character {
 
@@ -25,6 +27,7 @@ public class Character {
 	public String specialPower;
 
 	@ManyToMany(mappedBy="characters")
+	@ContainedIn
 	public List<VideoGame> appearsIn = new ArrayList<>();
 
 	Character() {
