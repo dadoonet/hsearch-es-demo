@@ -16,27 +16,40 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+
 @Entity
+@Indexed
 public class VideoGame {
 
 	@Id
 	@GeneratedValue
 	public long id;
 
+	@Field
 	public String title;
 
+	@Field(analyzer = @Analyzer(definition = "english"))
 	public String description;
 
+	@Field
 	public int rating;
 
 	public Date publishingDate;
 
+	@IndexedEmbedded
 	public Publisher publisher;
 
 	@ElementCollection
+	@IndexedEmbedded
+	@Field
 	public List<String> tags = new ArrayList<>();
 
 	@ManyToMany
+	@IndexedEmbedded
 	public List<Character> characters = new ArrayList<>();
 
 	VideoGame() {
