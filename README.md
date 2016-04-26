@@ -6,9 +6,9 @@ This repository shows how to connect from a pure Hibernate application to elasti
 
 You can look at the different branches:
 
-* [tree/00-legacy](pure hibernate)
-* [tree/01-elasticsearch](direct connection to elasticsearch)
-* [tree/02-hibernatesearch](connection to elasticsearch using hibernate search)
+* [pure hibernate](https://github.com/dadoonet/hsearch-es-demo/tree/00-legacy)
+* [direct connection to elasticsearch](https://github.com/dadoonet/hsearch-es-demo/tree/01-elasticsearch)
+* [connection to elasticsearch using hibernate search](https://github.com/dadoonet/hsearch-es-demo/tree/02-hibernatesearch)
 
 ## Run!
 
@@ -43,10 +43,10 @@ Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
 
 Main files you should look at:
 
-* POM file: [pom.xml](pom.xml)
-* Configuration: [src/main/resources/META-INF/persistence.xml](persistence.xml)
-* Top entity: [src/main/java/org/hibernate/demos/hswithes/model/VideoGame.java](VideoGame.java)
-* Tests: [src/test/java/org/hibernate/demos/HibernateSearchWithDbIT.java](HibernateSearchWithDbIT.java)
+* POM file: `pom.xml`
+* Configuration: `src/main/resources/META-INF/persistence.xml`
+* Top entity: `src/main/java/org/hibernate/demos/hswithes/model/VideoGame.java`
+* Tests: `src/test/java/org/hibernate/demos/HibernateSearchWithDbIT.java`
 
 ## Running elasticsearch
 
