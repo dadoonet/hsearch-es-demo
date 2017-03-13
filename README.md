@@ -15,28 +15,24 @@ You can look at the different branches:
 To run the project:
 
 ```sh
-git checkout 00-legacy
+git checkout <00-legacy|01-elasticsearch|02-hibernatesearch>
 mvn clean install
 ```
 
 You should see something like:
 
 ```
-[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ hibernate-search-with-elasticsearch-tia ---
-[INFO] Building jar: /Users/dpilato/Documents/Elasticsearch/Talks/hbsearch-es/code/hsearch-es-demo/target/hibernate-search-with-elasticsearch-tia-1.0-SNAPSHOT.jar
-[INFO] 
 [INFO] --- maven-failsafe-plugin:2.19.1:integration-test (default) @ hibernate-search-with-elasticsearch-tia ---
 
 -------------------------------------------------------
  T E S T S
 -------------------------------------------------------
 Running org.hibernate.demos.HibernateSearchWithDbIT
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.105 sec - in org.hibernate.demos.HibernateSearchWithDbIT
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.202 sec - in org.hibernate.demos.HibernateSearchWithDbIT
 
 Results :
 
 Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
-
 ```
 
 ## Important files
@@ -50,7 +46,22 @@ Main files you should look at:
 
 ## Running elasticsearch
 
-TODO: add the Docker recipe
+When using docker, you can run the `es.sh` script. Basically it does:
+
+```sh
+#! /bin/sh
+
+docker stop hsearch_es
+docker rm hsearch_es
+docker run -p 9200:9200 -p 9300:9300 -d --name hsearch_es elasticsearch:2.4
+docker logs -f hsearch_es
+```
+
+When done, you can stop the docker instance:
+
+```
+docker stop hsearch_es
+```
 
 ## Resources
 
